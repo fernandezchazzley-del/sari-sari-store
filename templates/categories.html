@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Categories | Joyo Store{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1>Product Categories</h1>
+        <p>Organize your store products.</p>
+    </div>
+</div>
+
+<div class="content-card">
+    <h2>Add Category</h2>
+    <form method="POST" class="inline-form">
+        <input type="text" name="name" placeholder="Category name" required>
+        <button type="submit">Add Category</button>
+    </form>
+</div>
+
+<div class="content-card">
+    <h2>Category List</h2>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Category Name</th>
+                    <th>Products</th>
+                    {% if current_user.role == 'Admin' %}<th>Action</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in categories %}
+                <tr>
+                    <td>{{ category.id }}</td>
+                    <td>{{ category.name }}</td>
+                    <td>{{ category.products|length }}</td>
+                    {% if current_user.role == 'Admin' %}
+                    <td>
+                        <form method="POST" action="{{ url_for('delete_category', category_id=category.id) }}"
+                              onsubmit="return confirm('Delete this category?')">
+                            <button type="submit" class="danger-button">Delete</button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% else %}
+                <tr><td colspan="4">No categories added yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

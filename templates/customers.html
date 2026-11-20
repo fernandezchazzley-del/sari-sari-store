@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Customers | Joyo Store{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1>Customers</h1>
+        <p>Manage customer information and credit accounts.</p>
+    </div>
+</div>
+
+<div class="content-card">
+    <h2>Add Customer</h2>
+    <form method="POST" class="form-grid">
+        <div>
+            <label>Customer Name</label>
+            <input name="name" required placeholder="Full name">
+        </div>
+        <div>
+            <label>Contact Number</label>
+            <input name="contact" placeholder="09XXXXXXXXX">
+        </div>
+        <div>
+            <label>Address</label>
+            <input name="address" placeholder="Customer address">
+        </div>
+        <button type="submit">Add Customer</button>
+    </form>
+</div>
+
+<div class="content-card">
+    <h2>Customer Records</h2>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Customer ID</th>
+                    <th>Name</th>
+                    <th>Contact Number</th>
+                    <th>Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td>{{ customer.id }}</td>
+                    <td>{{ customer.name }}</td>
+                    <td>{{ customer.contact or '—' }}</td>
+                    <td>{{ customer.address or '—' }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4">No customers registered yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

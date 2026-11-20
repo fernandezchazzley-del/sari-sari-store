@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Joyo Family Store{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1>Dashboard</h1>
+        <p>Welcome, {{ current_user.full_name }}!</p>
+    </div>
+    <span class="role-label">{{ current_user.role }}</span>
+</div>
+
+<div class="summary-grid">
+
+    <div class="summary-card">
+        <h3>Today's Sales</h3>
+        <h2>₱{{ "%.2f"|format(today_sales|float) }}</h2>
+    </div>
+
+    <div class="summary-card">
+        <h3>Total Products</h3>
+        <h2>{{ total_products }}</h2>
+    </div>
+
+    <div class="summary-card">
+        <h3>Total Customers</h3>
+        <h2>{{ total_customers }}</h2>
+    </div>
+
+    <div class="summary-card warning-card">
+        <h3>Low Stock Products</h3>
+        <h2>{{ low_stock }}</h2>
+    </div>
+
+</div>
+
+<div class="content-card">
+    <h2>Recent Sales</h2>
+
+    {% if recent_sales %}
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Sale ID</th>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Payment Type</th>
+                    <th>Total Amount</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for sale in recent_sales %}
+                <tr>
+                    <td>#{{ sale.id }}</td>
+                    <td>{{ sale.sale_date.strftime('%b %d, %Y %I:%M %p') }}</td>
+                    <td>
+                        {{ sale.customer.name if sale.customer else 'Walk-in Customer' }}
+                    </td>
+                    <td>{{ sale.payment_type }}</td>
+                    <td>₱{{ "%.2f"|format(sale.total_amount|float) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p class="empty-message">No sales recorded yet.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

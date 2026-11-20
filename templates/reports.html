@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Reports | Joyo Store{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1>Sales & Profit Reports</h1>
+        <p>View sales performance and gross profit.</p>
+    </div>
+</div>
+
+<div class="content-card">
+    <h2>Select Report Period</h2>
+
+    <form method="GET" class="inline-form">
+        <div>
+            <label>Start Date</label>
+            <input type="date" name="start" value="{{ start_date }}" required>
+        </div>
+
+        <div>
+            <label>End Date</label>
+            <input type="date" name="end" value="{{ end_date }}" required>
+        </div>
+
+        <button type="submit">Generate Report</button>
+    </form>
+</div>
+
+<div class="summary-grid">
+    <div class="summary-card">
+        <h3>Total Sales</h3>
+        <h2>₱{{ "%.2f"|format(total_sales|float) }}</h2>
+    </div>
+
+    <div class="summary-card">
+        <h3>Gross Profit</h3>
+        <h2>₱{{ "%.2f"|format(gross_profit|float) }}</h2>
+    </div>
+
+    <div class="summary-card">
+        <h3>Number of Sales</h3>
+        <h2>{{ sales|length }}</h2>
+    </div>
+</div>
+
+<div class="content-card">
+    <h2>Sales Report Details</h2>
+    <p>Period: {{ start_date }} to {{ end_date }}</p>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Sale ID</th>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Payment Type</th>
+                    <th>Total Amount</th>
+                    <th>Gross Profit</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for sale in sales %}
+                {% set profit = namespace(value=0) %}
+                {% for item in sale.items %}
+                    {% set profit.value = profit.value + ((item.unit_price|float - item.unit_cost|float) * item.quantity) %}
+                {% endfor %}
+
+                <tr>
+                    <td>#{{ sale.id }}</td>
+                    <td>{{ sale.sale_date.strftime('%b %d, %Y') }}</td>
+                    <td>{{ sale.customer.name if sale.customer else 'Walk-in' }}</td>
+                    <td>{{ sale.payment_type }}</td>
+                    <td>₱{{ "%.2f"|format(sale.total_amount|float) }}</td>
+                    <td>₱{{ "%.2f"|format(profit.value) }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6">No sales found for this period.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

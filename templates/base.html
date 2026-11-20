@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Joyo Family Store{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+{% if current_user.is_authenticated %}
+<div class="sidebar">
+    <h2>JOYO STORE</h2>
+    <p class="sidebar-subtitle">Management System</p>
+
+    <nav>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('products') }}">Products</a>
+        <a href="{{ url_for('categories') }}">Categories</a>
+        <a href="{{ url_for('customers') }}">Customers</a>
+        <a href="{{ url_for('sales') }}">Sales & Credit</a>
+        <a href="{{ url_for('inventory') }}">Inventory</a>
+        <a href="{{ url_for('reports') }}">Reports</a>
+
+        {% if current_user.role == 'Admin' %}
+        <a href="{{ url_for('users') }}">User Management</a>
+        {% endif %}
+
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+</div>
+{% endif %}
+
+<main class="{% if current_user.is_authenticated %}main-content{% else %}login-main{% endif %}">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert {{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+
+</main>
+
+</body>
+</html>

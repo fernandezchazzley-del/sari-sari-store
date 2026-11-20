@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}Sales | Joyo Store{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1>Sales & Credit Management</h1>
+        <p>Record store sales and customer payments.</p>
+    </div>
+</div>
+
+<div class="content-card">
+    <h2>Record New Sale</h2>
+
+    <form method="POST">
+        <div class="form-grid">
+            <div>
+                <label>Payment Type</label>
+                <select name="payment_type" required>
+                    <option value="Cash">Cash</option>
+                    <option value="Credit">Credit</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Customer</label>
+                <select name="customer_id">
+                    <option value="">Walk-in Customer</option>
+                    {% for customer in customers %}
+                    <option value="{{ customer.id }}">{{ customer.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label>Due Date (Credit Only)</label>
+                <input type="date" name="due_date">
+            </div>
+        </div>
+
+        <h3>Products Purchased</h3>
+
+        <div id="sale-items">
+            <div class="sale-item-row">
+                <select name="product_id" required>
+                    <option value="">Select product</option>
+                    {% for product in products %}
+                    {% if product.stock > 0 %}
+                    <option value="{{ product.id }}">
+                        {{ product.name }} — ₱{{ "%.2f"|format(product.unit_price|float) }}
+                        (Stock: {{ product.stock }})
+                    </option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+
+                <input type="number" name="quantity" min="1" value="1" required>
+            </div>
+        </div>
+
+        <button type="button" class="secondary-button" onclick="addSaleItem()">
+            + Add Another Product
+        </button>
+
+        <button type="submit">Save Sale</button>
+    </form>
+</div>
+
+<div class="content-card">
+    <h2>Sales History</h2>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Sale ID</th>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Payment Type</th>
+                    <th>Total</th>
+                    <th>Paid</th>
+                    <th>Balance</th>
+                    <th>Recorded By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in sales %}
+                {% set balance = outstanding(sale) %}
+                {% set paid = sale.total_amount|float - balance %}
+                <tr>
+                    <td>#{{ sale.id }}</td>
+                    <td>{{ sale.sale_date.strftime('%b %d, %Y') }}</td>
+                    <td>{{ sale.customer.name if sale.customer else 'Walk-in' }}</td>
+                    <td>{{ sale.payment_type }}</td>
+                    <td>₱{{ "%.2f"|format(sale.total_amount|float) }}</td>
+                    <td>₱{{ "%.2f"|format(paid) }}</td>
+                    <td>₱{{ "%.2f"|format(balance) }}</td>
+                    <td>{{ sale.user.full_name }}</td>
+                </tr>
+
+                {% if sale.payment_type == 'Credit' and balance > 0 %}
+                <tr>
+                    <td colspan="8">
+                        <strong>Record payment for Sale #{{ sale.id }}</strong>
+
+                        <form method="POST" action="{{ url_for('add_payment', sale_id=sale.id) }}" class="inline-form">
+                            <input type="number" name="amount" min="0.01"
+                                   max="{{ balance }}" step="0.01"
+                                   placeholder="Payment amount" required>
+                            <button type="submit">Add Payment</button>
+                        </form>
+
+                        {% if sale.due_date %}
+                        <small>Due date: {{ sale.due_date.strftime('%b %d, %Y') }}</small>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+
+                {% if not sales %}
+                <tr><td colspan="8">No sales recorded yet.</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function addSaleItem() {
+    const container = document.getElementById("sale-items");
+    const firstRow = container.querySelector(".sale-item-row");
+    const newRow = firstRow.cloneNode(true);
+
+    newRow.querySelector("select").value = "";
+    newRow.querySelector("input").value = "1";
+
+    container.appendChild(newRow);
+}
+</script>
+
+{% endblock %}
