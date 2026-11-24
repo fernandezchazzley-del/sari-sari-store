@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Joyo Family Store{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+{% if current_user.is_authenticated %}
+<header class="topbar"><a class="brand" href="{{ url_for('dashboard') }}">Joyo Family Store <small>Store DBMS</small></a>
+<nav><a href="{{ url_for('dashboard') }}">Dashboard</a><a href="{{ url_for('products') }}">Products</a><a href="{{ url_for('sales') }}">Sales</a><a href="{{ url_for('customers') }}">Customers / Credit</a><a href="{{ url_for('inventory') }}">Inventory</a><a href="{{ url_for('reports') }}">Reports</a>{% if current_user.role == 'Admin' %}<a href="{{ url_for('categories') }}">Categories</a><a href="{{ url_for('users') }}">Users</a>{% endif %}</nav>
+<div class="userbox">{{ current_user.fullname }} <span>{{ current_user.role }}</span><a class="logout" href="{{ url_for('logout') }}">Log out</a></div></header>
+{% endif %}
+<main class="container {% if not current_user.is_authenticated %}login-container{% endif %}">
+{% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}</div>{% endif %}{% endwith %}
+{% block content %}{% endblock %}
+</main>
+<footer>Joyo Family Store · Local store management</footer>
+{% block scripts %}{% endblock %}
+</body></html>

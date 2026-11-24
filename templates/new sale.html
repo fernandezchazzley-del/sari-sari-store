@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}New sale{% endblock %}
+
+{% block content %}
+
+<div class="page-head">
+    <div>
+        <h1>Record sale</h1>
+        <p>Select items and quantities. Stock is checked and reduced when saved.</p>
+    </div>
+    <a class="button" href="{{ url_for('sales') }}">Cancel</a>
+</div>
+
+<section class="panel">
+    <form method="post" id="sale-form">
+
+        <div class="form-grid">
+            <label>
+                Payment type
+                <select name="paymenttype" id="paymenttype" required>
+                    <option>Cash</option>
+                    <option>Credit</option>
+                </select>
+            </label>
+
+            <label>
+                Customer
+                <select name="customerid" id="customerid">
+                    <option value="">Walk-in / optional for cash</option>
+                    {% for c in customers %}
+                    <option value="{{ c.customerid }}">
+                        {{ c.customername }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <small>Required for credit sale.</small>
+            </label>
+        </div>
+
+        <h2>Sale items</h2>
+
+        <!-- Product search bar -->
+        <label>
+            Search product
+            <input
+                type="text"
+                id="product-search"
+                placeholder="Type product name to search..."
+                autocomplete="off"
+            >
+        </label>
+
+        <div id="items">
+
+            <div class="sale-row">
+                <label>
+                    Product
+                    <select name="productid" class="product-select" required>
+                        <option value="">Select product</option>
+
+                        {% for p in products %}
+                        <option value="{{ p.productid }}">
+                            {{ p.productname }} · {{ p.unitprice|currency }} · stock {{ p.stock }}
+                        </option>
+                        {% endfor %}
+
+                    </select>
+                </label>
+
+                <label>
+                    Quantity
+                    <input
+                        type="number"
+                        name="quantity"
+                        min="1"
+                        value="1"
+                        required
+                    >
+                </label>
+
+                <button type="button" class="danger small-button remove-row">
+                    Remove
+                </button>
+            </div>
+
+        </div>
+
+        <button type="button" class="button" id="add-row">
+            + Add another item
+        </button>
+
+        <div class="form-actions">
+            <button class="primary">Complete sale</button>
+        </div>
+
+    </form>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+const items = document.getElementById('items');
+const searchInput = document.getElementById('product-search');
+
+// Filter products in every product dropdown
+function filterProducts() {
+    const searchText = searchInput.value.toLowerCase().trim();
+
+    document.querySelectorAll('.product-select').forEach(select => {
+        Array.from(select.options).forEach(option => {
+            if (option.value === '') {
+                option.hidden = false;
+                return;
+            }
+
+            option.hidden = !option.text.toLowerCase().includes(searchText);
+        });
+
+        // If the selected product is hidden by the search,
+        // return the dropdown to its placeholder.
+        if (
+            select.selectedOptions.length &&
+            select.selectedOptions[0].hidden
+        ) {
+            select.value = '';
+        }
+    });
+}
+
+// Search as the user types
+searchInput.addEventListener('input', filterProducts);
+
+// Add another product row
+document.getElementById('add-row').addEventListener('click', () => {
+    const row = items.querySelector('.sale-row').cloneNode(true);
+
+    row.querySelector('select').value = '';
+    row.querySelector('input').value = '1';
+
+    items.appendChild(row);
+
+    // Apply current search to the new product dropdown
+    filterProducts();
+});
+
+// Remove product row
+items.addEventListener('click', event => {
+    if (event.target.classList.contains('remove-row')) {
+        const rows = items.querySelectorAll('.sale-row');
+
+        if (rows.length > 1) {
+            event.target.closest('.sale-row').remove();
+        }
+    }
+});
+
+// Require customer for credit sales
+document.getElementById('sale-form').addEventListener('submit', event => {
+    if (
+        document.getElementById('paymenttype').value === 'Credit' &&
+        !document.getElementById('customerid').value
+    ) {
+        event.preventDefault();
+        alert('Please select a customer for a credit sale.');
+    }
+});
+</script>
+
+{% endblock %}
